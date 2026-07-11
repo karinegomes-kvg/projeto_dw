@@ -1,0 +1,118 @@
+version: 2
+
+models:
+
+  - name: stg_crimes
+    description: "Camada de staging contendo os registros de crimes da cidade de Chicago."
+
+  - name: dim_tempo
+    description: "Dimensão de tempo."
+
+    columns:
+      - name: sk_tempo
+        description: "Chave substituta da dimensão tempo."
+        tests:
+          - unique
+          - not_null
+
+      - name: data_completa
+        description: "Data completa da ocorrência."
+        tests:
+          - not_null
+
+  - name: dim_crime
+    description: "Dimensão contendo a classificação dos crimes."
+
+    columns:
+      - name: sk_crime
+        description: "Chave substituta da dimensão crime."
+        tests:
+          - unique
+          - not_null
+
+      - name: iucr
+        description: "Código IUCR do crime."
+
+      - name: tipo_primario
+        description: "Tipo principal do crime."
+
+  - name: dim_localizacao
+    description: "Dimensão contendo informações da localização da ocorrência."
+
+    columns:
+      - name: sk_localizacao
+        description: "Chave substituta da localização."
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_jurisdicao
+    description: "Dimensão contendo informações da jurisdição policial."
+
+    columns:
+      - name: sk_jurisdicao
+        description: "Chave substituta da jurisdição."
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_ocorrencia
+    description: "Dimensão contendo características da ocorrência."
+
+    columns:
+      - name: sk_ocorrencia
+        description: "Chave substituta da ocorrência."
+        tests:
+          - unique
+          - not_null
+
+  - name: fato_ocorrencias
+    description: "Tabela fato contendo as ocorrências criminais."
+
+    columns:
+
+      - name: id_origem
+        description: "Identificador original da ocorrência."
+
+      - name: numero_caso
+        description: "Número do caso."
+
+      - name: sk_tempo
+        description: "Chave da dimensão tempo."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_tempo')
+              field: sk_tempo
+
+      - name: sk_crime
+        description: "Chave da dimensão crime."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_crime')
+              field: sk_crime
+
+      - name: sk_localizacao
+        description: "Chave da dimensão localização."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_localizacao')
+              field: sk_localizacao
+
+      - name: sk_jurisdicao
+        description: "Chave da dimensão jurisdição."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_jurisdicao')
+              field: sk_jurisdicao
+
+      - name: sk_ocorrencia
+        description: "Chave da dimensão ocorrência."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_ocorrencia')
+              field: sk_ocorrencia

@@ -87,6 +87,7 @@ O Data Warehouse foi modelado utilizando o esquema estrela, composto por:
 
 ---
 
+## Passo 1
 ## Configuração do banco
 
 Edite o arquivo `config.py` com as informações de conexão do PostgreSQL:
@@ -98,7 +99,6 @@ USER = "postgres"
 PASSWORD = "sua_senha"
 DATABASE = "dw_chicago"
 ```
-## Passo 1
 ## 1. Criar o banco de dados
 
 Execute:

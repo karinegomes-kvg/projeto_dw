@@ -8,8 +8,27 @@ O projeto foi desenvolvido utilizando PostgreSQL e dbt (Data Build Tool), aplica
 
 ---
 
-## Tecnologias utilizadas
+## Pré-requisitos
 
+Antes de executar o projeto, é necessário ter instalado:
+
+- Python 3.11 ou superior
+- PostgreSQL
+- pgAdmin (opcional, para administração do banco)
+- Bibliotecas Python:
+  - pandas
+  - sqlalchemy
+  - psycopg2-binary
+
+Instale as bibliotecas com:
+
+```bash
+pip install pandas sqlalchemy psycopg2-binary
+```
+
+---
+
+## Tecnologias utilizadas
 - Python 3.11
 - PostgreSQL
 - dbt Core
@@ -68,96 +87,62 @@ O Data Warehouse foi modelado utilizando o esquema estrela, composto por:
 
 ---
 
-## Como executar o pipeline
+## Configuração do banco
 
-### 1. Acessar a pasta do projeto
+Edite o arquivo `config.py` com as informações de conexão do PostgreSQL:
+
+```python
+HOST = "localhost"
+PORT = "5432"
+USER = "postgres"
+PASSWORD = "sua_senha"
+DATABASE = "dw_chicago"
+```
+## Passo 1
+## 1. Criar o banco de dados
+
+Execute:
 
 ```bash
-cd dw_chicago
+python create_database.py
+```
+Esse script cria o banco `dw_chicago`.
+
+## 2. Criar os schemas
+
+Execute:
+
+```bash
+python create_schemas.py
+```
+
+Serão criados os schemas utilizados no projeto:
+
+- raw
+- dw
+
+## 3. Importar os dados
+
+Coloque o arquivo `Crimes.csv` na pasta:
+
+```
+data/
+```
+
+Em seguida execute:
+
+```bash
+python import_csv.py
+```
+
+Durante a importação, o script realiza automaticamente:
+- conversão das colunas `Date` e `Updated On` para o tipo Data/Hora;
+- conversão das colunas `Latitude` e `Longitude` para valores numéricos;
+- importação em lotes de 50.000 registros para reduzir o consumo de memória.
+Ao final, todos os registros serão armazenados na tabela:
+
+```
+raw.crimes
 ```
 
 ---
-
-### 2. Verificar a conexão com o banco
-
-```bash
-dbt debug
-```
-
-Esse comando verifica se a configuração do dbt e a conexão com o PostgreSQL estão corretas.
-
----
-
-### 3. Executar os modelos
-
-```bash
-dbt run
-```
-
-Esse comando cria todos os modelos do Data Warehouse, incluindo:
-
-- staging
-- dimensões
-- tabela fato
-
----
-
-### 4. Executar os testes
-
-```bash
-dbt test
-```
-
-São executados os testes definidos no arquivo `schema.yml`, incluindo:
-
-- not_null
-- unique
-- relationships
-
-Esses testes garantem a qualidade e a integridade dos dados.
-
----
-
-### 5. Executar os snapshots
-
-```bash
-dbt snapshot
-```
-
-Esse comando executa os snapshots implementados para as dimensões:
-
-- dim_crime
-- dim_localizacao
-
-Os snapshots permitem manter o histórico das alterações nas dimensões, implementando o conceito de Slowly Changing Dimension (SCD Tipo 2).
-
----
-
-## Qualidade dos dados
-
-Foram implementados testes automáticos utilizando o dbt para validar:
-
-- ausência de valores nulos nas chaves;
-- unicidade das chaves substitutas;
-- integridade referencial entre a tabela fato e as dimensões.
-
----
-
-## Snapshots
-
-Foram implementados snapshots utilizando o suporte nativo do dbt para preservar o histórico de alterações das dimensões:
-
-- dim_crime
-- dim_localizacao
-
-Os snapshots utilizam a estratégia **SCD Tipo 2**, permitindo manter versões históricas dos registros.
-
----
-
-## Fonte dos dados
-
-Base pública:
-
-**Crimes - 2001 to Present**
-
-Portal de Dados da Cidade de Chicago.

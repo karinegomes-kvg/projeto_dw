@@ -41,44 +41,46 @@ pip install pandas sqlalchemy psycopg2-binary
 ## Estrutura do projeto
 
 ```
-dw_chicago/
-│
-├── models/
-│   ├── staging/
-│   │   └── stg_crimes.sql
-│   │
-│   ├── dimensions/
-│   │   ├── dim_tempo.sql
-│   │   ├── dim_crime.sql
-│   │   ├── dim_localizacao.sql
-│   │   ├── dim_jurisdicao.sql
-│   │   └── dim_ocorrencia.sql
-│   │
-│   ├── facts/
-│   │   └── fato_ocorrencias.sql
-│   │
-│   └── schema.yml
-│
-├── snapshots/
-│   ├── snapshot_dim_crime.sql
-│   └── snapshot_dim_localizacao.sql
-│
-├── dbt_project.yml
-└── README.md
+PROJETO_DW/
+├── data/
+│   └── Crimes.csv                    # Base de dados bruta (CSV)
+├── dw_chicago/                       # Projeto dbt 
+│   ├── analyses/                     
+│   ├── logs/                         
+│   ├── macros/                       
+│   ├── models/                       # Modelos de dados 
+│   │   ├── dimensions/               # Tabelas dimensão 
+│   │   ├── facts/                    # Tabela fato 
+│   │   ├── staging/                  # Camada de staging 
+│   │   └── schema.yml                # Configurações e testes dos modelos
+│   ├── seeds/                        
+│   ├── snapshots/                    # Estratégias de Slowing Changing Dimensions (SCD)
+│   │   ├── snapshot_dim_crime.sql
+│   │   └── snapshot_dim_localizacao.sql
+│   ├── target/                       
+│   └── tests/                        # Testes de qualidade de dados personalizados
+├── scripts/                          # Scripts Python de suporte/ETL
+│   ├── analyze_csv.py                # Análise exploratória dos dados
+│   ├── config.py                     # Configurações e variáveis de ambiente
+│   ├── create_database.py            # Criação do banco de dados
+│   ├── create_schemas.py             # Criação dos schemas no banco
+│   ├── database.py                   # Conexão com o banco de dados
+│   └── import_csv.py                 # Script para ingestão do CSV no banco
+├── .gitignore                        # Arquivos ignorados pelo Git
+├── dbt_project.yml                   # Configuração principal do projeto dbt
+└── README.md                         # Documentação do projeto
 ```
 
 ---
 
-## Modelo Dimensional
+## Passo 1: Carga dos dados do sistema
 
 O Data Warehouse foi modelado utilizando o esquema estrela, composto por:
 
 ### Tabela fato
-
 - fato_ocorrencias
 
 ### Tabelas dimensão
-
 - dim_tempo
 - dim_crime
 - dim_localizacao
@@ -146,3 +148,6 @@ raw.crimes
 ```
 
 ---
+
+## Passo 2: Criação e carga do modelo dimensional
+

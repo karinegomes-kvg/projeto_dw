@@ -1,19 +1,20 @@
-SELECT DISTINCT
+{{ config(materialized='table') }}
 
-    ROW_NUMBER() OVER (
-        ORDER BY bloco
-    ) AS sk_localizacao,
+WITH base AS (
 
+    SELECT DISTINCT
+        bloco,
+        descricao_local,
+        ward,
+        area_comunidade
+    FROM {{ ref('stg_crimes') }}
+
+)
+
+SELECT
+    ROW_NUMBER() OVER (ORDER BY bloco, ward) AS sk_localizacao,
     bloco,
-
     descricao_local,
-
     ward,
-
-    area_comunidade,
-
-    latitude,
-
-    longitude
-
-FROM {{ ref('stg_crimes') }}
+    area_comunidade
+FROM base

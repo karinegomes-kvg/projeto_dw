@@ -1,11 +1,14 @@
-SELECT DISTINCT
+{{ config(materialized='table') }}
 
-    ROW_NUMBER() OVER (
-        ORDER BY distrito, beat
-    ) AS sk_jurisdicao,
+WITH base AS (
+    SELECT DISTINCT
+        beat,
+        distrito
+    FROM {{ ref('stg_crimes') }}
+)
 
+SELECT
+    ROW_NUMBER() OVER (ORDER BY beat) AS sk_jurisdicao,
     beat,
-
     distrito
-
-FROM {{ ref('stg_crimes') }}
+FROM base

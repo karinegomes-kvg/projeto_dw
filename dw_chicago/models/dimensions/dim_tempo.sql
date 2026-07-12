@@ -1,19 +1,20 @@
-SELECT DISTINCT
+{{ config(materialized='table') }}
 
-    ROW_NUMBER() OVER (ORDER BY DATE(data_ocorrencia)) AS sk_tempo,
+WITH datas AS (
 
-    DATE(data_ocorrencia) AS data_completa,
+    SELECT DISTINCT
+        data_ocorrencia::date AS data_completa
+    FROM {{ ref('stg_crimes') }}
 
-    EXTRACT(YEAR FROM data_ocorrencia) AS ano,
+)
 
-    EXTRACT(MONTH FROM data_ocorrencia) AS mes,
+SELECT
+    ROW_NUMBER() OVER (ORDER BY data_completa) AS sk_tempo,
+    data_completa,
 
-    EXTRACT(DAY FROM data_ocorrencia) AS dia,
+    EXTRACT(YEAR FROM data_completa) AS ano,
+    EXTRACT(MONTH FROM data_completa) AS mes,
+    EXTRACT(DAY FROM data_completa) AS dia,
+    EXTRACT(QUARTER FROM data_completa) AS trimestre
 
-    TO_CHAR(data_ocorrencia, 'Day') AS dia_semana,
-
-    EXTRACT(QUARTER FROM data_ocorrencia) AS trimestre
-
-FROM {{ ref('stg_crimes') }}
-
-ORDER BY data_completa
+FROM datas

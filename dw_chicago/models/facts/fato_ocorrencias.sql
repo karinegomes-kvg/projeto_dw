@@ -1,49 +1,54 @@
+{{ config(materialized='table') }}
+
+WITH base AS (
+
+    SELECT *
+    FROM {{ ref('stg_crimes') }}
+
+)
+
 SELECT
 
-    s.id_origem,
+    -- surrogate key da fato
+    ROW_NUMBER() OVER () AS sk_fato,
 
-    s.numero_caso,
+    -- chaves estrangeiras
+    crime.sk_crime,
+    loc.sk_localizacao,
+    jur.sk_jurisdicao,
+    ocorr.sk_ocorrencia,
+    tempo.sk_tempo,
 
-    dt.sk_tempo,
+    -- medidas
+    1 AS quantidade_ocorrencias,
 
-    dc.sk_crime,
+    -- atributos opcionais (degenerate)
+    base.numero_caso
 
-    dl.sk_localizacao,
+FROM base
 
-    dj.sk_jurisdicao,
+-- JOIN CRIME
+LEFT JOIN {{ ref('dim_crime') }} crime
+    ON base.iucr = crime.iucr
+   AND base.tipo_primario = crime.tipo_primario
 
-    doo.sk_ocorrencia,
+-- JOIN LOCALIZAÇÃO
+LEFT JOIN {{ ref('dim_localizacao') }} loc
+    ON base.bloco = loc.bloco
+   AND base.descricao_local = loc.descricao_local
+   AND base.ward = loc.ward
+   AND base.area_comunidade = loc.area_comunidade
 
-    1 AS quantidade_ocorrencia,
+-- JOIN JURISDIÇÃO
+LEFT JOIN {{ ref('dim_jurisdicao') }} jur
+    ON base.beat = jur.beat
+   AND base.distrito = jur.distrito
 
-    CASE
-        WHEN s.prisao_efetuada THEN 1
-        ELSE 0
-    END AS teve_prisao
+-- JOIN OCORRÊNCIA
+LEFT JOIN {{ ref('dim_ocorrencia') }} ocorr
+    ON base.prisao_efetuada = ocorr.prisao_efetuada
+   AND base.crime_domestico = ocorr.crime_domestico
 
-FROM {{ ref('stg_crimes') }} s
-
-JOIN {{ ref('dim_tempo') }} dt
-    ON DATE(s.data_ocorrencia) = dt.data_completa
-
-JOIN {{ ref('dim_crime') }} dc
-    ON s.iucr = dc.iucr
-   AND s.tipo_primario = dc.tipo_primario
-   AND s.descricao = dc.descricao
-   AND s.codigo_fbi = dc.codigo_fbi
-
-JOIN {{ ref('dim_localizacao') }} dl
-    ON s.bloco = dl.bloco
-   AND s.descricao_local = dl.descricao_local
-   AND s.ward = dl.ward
-   AND s.area_comunidade = dl.area_comunidade
-   AND s.latitude = dl.latitude
-   AND s.longitude = dl.longitude
-
-JOIN {{ ref('dim_jurisdicao') }} dj
-    ON s.beat = dj.beat
-   AND s.distrito = dj.distrito
-
-JOIN {{ ref('dim_ocorrencia') }} doo
-    ON s.prisao_efetuada = doo.prisao_efetuada
-   AND s.crime_domestico = doo.crime_domestico
+-- JOIN TEMPO
+LEFT JOIN {{ ref('dim_tempo') }} tempo
+    ON base.data_ocorrencia::date = tempo.data_completa

@@ -1,11 +1,16 @@
-SELECT DISTINCT
+{{ config(materialized='table') }}
 
-    ROW_NUMBER() OVER (
-        ORDER BY prisao_efetuada, crime_domestico
-    ) AS sk_ocorrencia,
+WITH base AS (
 
+    SELECT DISTINCT
+        prisao_efetuada,
+        crime_domestico
+    FROM {{ ref('stg_crimes') }}
+
+)
+
+SELECT
+    ROW_NUMBER() OVER () AS sk_ocorrencia,
     prisao_efetuada,
-
     crime_domestico
-
-FROM {{ ref('stg_crimes') }}
+FROM base

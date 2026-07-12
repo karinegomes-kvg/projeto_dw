@@ -150,4 +150,83 @@ raw.crimes
 ---
 
 ## Passo 2: Criação e carga do modelo dimensional
+## Como executar o pipeline
 
+### 1. Acessar a pasta do projeto
+
+```bash
+cd dw_chicago
+```
+
+### 2. Verificar a conexão com o banco
+
+```bash
+dbt debug
+```
+Esse comando verifica se a configuração do dbt e a conexão com o PostgreSQL estão corretas.
+
+### 3. Executar os modelos
+
+```bash
+dbt run
+```
+
+Esse comando cria todos os modelos do Data Warehouse, incluindo:
+
+- staging
+- dimensões
+- tabela fato
+
+### 4. Executar os testes
+
+```bash
+dbt test
+```
+
+São executados os testes definidos no arquivo `schema.yml`, incluindo:
+
+- not_null
+- unique
+- relationships
+
+Esses testes garantem a qualidade e a integridade dos dados.
+
+### 5. Executar os snapshots
+
+```bash
+dbt snapshot
+```
+
+Esse comando executa os snapshots implementados para as dimensões:
+
+- dim_crime
+- dim_localizacao
+
+Os snapshots permitem manter o histórico das alterações nas dimensões, implementando o conceito de Slowly Changing Dimension (SCD Tipo 2).
+
+
+## Qualidade dos dados
+
+Foram implementados testes automáticos utilizando o dbt para validar:
+
+- ausência de valores nulos nas chaves;
+- unicidade das chaves substitutas;
+- integridade referencial entre a tabela fato e as dimensões.
+
+## Snapshots
+
+Foram implementados snapshots utilizando o suporte nativo do dbt para preservar o histórico de alterações das dimensões:
+
+- dim_crime
+- dim_localizacao
+
+Os snapshots utilizam a estratégia **SCD Tipo 2**, permitindo manter versões históricas dos registros.
+
+
+## Fonte dos dados
+
+Base pública:
+
+**Crimes - 2001 to Present**
+
+Portal de Dados da Cidade de Chicago.
